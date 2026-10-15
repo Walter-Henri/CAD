@@ -1,5 +1,5 @@
 // Interface: painel com abas, filtros, indicadores, fontes, legenda e detalhes do registro.
-import { TIPOS, NIVEIS, ORIGENS, SHAPES } from './config.js';
+import { TIPOS, NIVEIS, ORIGENS, SHAPES, DECOR } from './config.js';
 import { $, esc, num, bairroDe } from './util.js';
 export const toast = (m, ruim) => { const t = $('toast'); t.textContent = m; t.className = 'toast show' + (ruim ? ' bad' : ''); clearTimeout(toast.h); toast.h = setTimeout(() => { t.className = 'toast'; }, 3400); };
 const ICO_VAZIO = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>';
@@ -28,7 +28,7 @@ export function painelCamadas(ctx) {
 export function painelFiltros(ctx, lista, todos) {
   const F = ctx.filtros, bairros = [...new Set(todos.map(bairroDe).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt'));
   const cnt = (t) => todos.filter((r) => r.tipo === t).length;
-  $('p-filters').innerHTML = '<h3>Tipo de risco</h3>' + Object.entries(TIPOS).map(([k, t]) => '<label class="row"><input type="checkbox" data-ft="' + k + '"' + (F.tipos.has(k) ? ' checked' : '') + '><svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><path d="' + SHAPES[t.shape] + '" fill="var(--c-' + ({ inundacao: 'flood', deslizamento: 'slide', risco: 'gen', outro: 'other' })[k] + ')"/></svg><span>' + t.label + '</span><span class="n">' + cnt(k) + '</span></label>').join('') +
+  $('p-filters').innerHTML = '<h3>Tipo de risco</h3>' + Object.entries(TIPOS).map(([k, t]) => '<label class="row"><input type="checkbox" data-ft="' + k + '"' + (F.tipos.has(k) ? ' checked' : '') + '><svg width="18" height="18" viewBox="0 0 32 32" aria-hidden="true"><path d="' + SHAPES[t.shape] + '" fill="var(--c-' + ({ inundacao: 'flood', deslizamento: 'slide', risco: 'gen', outro: 'other' })[k] + ')"/>' + DECOR[k] + '</svg><span>' + t.label + '</span><span class="n">' + cnt(k) + '</span></label>').join('') +
     '<h3>Classificação de risco</h3><div class="chips">' + Object.entries(NIVEIS).map(([k, n]) => chip(k, F.niveis.has(k), n.short, 'fn')).join('') + '</div><p class="note">R4 muito alto, R3 alto, R2 médio, S/C sem classificação na fonte.</p>' +
     '<h3>Origem do dado</h3><div class="fg"><label class="sr" for="fFonte">Origem</label><select id="fFonte"><option value="">Todas</option>' + Object.entries(ORIGENS).map(([k, t]) => '<option value="' + k + '"' + (F.fonte === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></div>' +
     '<h3>Bairro ou localidade</h3><div class="fg"><label class="sr" for="fBairro">Bairro</label><select id="fBairro"><option value="">Todos</option>' + bairros.map((b) => '<option' + (F.bairro === b ? ' selected' : '') + '>' + esc(b) + '</option>').join('') + '</select></div>' +
@@ -64,7 +64,7 @@ export function painelFontes(fontes, status) {
     return '<details class="src"><summary><span class="st ' + f.status + '">' + R[f.status] + '</span>' + esc(f.nome) + '</summary><dl>' + L.map(([k, v]) => '<dt>' + k + '</dt><dd>' + esc(v) + '</dd>').join('') + (f.url ? '<dt>Link</dt><dd><a href="' + esc(f.url) + '" target="_blank" rel="noopener">Abrir fonte</a></dd>' : '') + '</dl></details>'; }).join('');
 }
 export function legenda(calorLigado) {
-  $('legendBody').innerHTML = '<ul>' + Object.entries(TIPOS).map(([k, t]) => '<li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="' + SHAPES[t.shape] + '" fill="var(--c-' + ({ inundacao: 'flood', deslizamento: 'slide', risco: 'gen', outro: 'other' })[k] + ')" stroke="var(--surface)" stroke-width="2"/></svg>' + t.label + '</li>').join('') +
+  $('legendBody').innerHTML = '<ul>' + Object.entries(TIPOS).map(([k, t]) => '<li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="' + SHAPES[t.shape] + '" fill="var(--c-' + ({ inundacao: 'flood', deslizamento: 'slide', risco: 'gen', outro: 'other' })[k] + ')" stroke="var(--surface)" stroke-width="2"/>' + DECOR[k] + '</svg>' + t.label + '</li>').join('') +
     '<li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 9c4-5 18-5 22 0v14c-4 5-18 5-22 0z" fill="var(--c-gen)" fill-opacity=".3" stroke="var(--c-gen)" stroke-width="2"/></svg>Mancha derivada (não oficial)</li></ul>' +
     '<p class="note">Classificação: R4 muito alto, R3 alto, R2 médio, S/C sem classificação.</p>' +
     (calorLigado ? '<p class="note" style="margin-bottom:4px">Densidade de endereços listados</p><div class="ramp"></div><div class="small muted" style="display:flex;justify-content:space-between"><span>menor</span><span>maior</span></div>' : '');

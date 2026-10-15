@@ -66,4 +66,3 @@ npm run dev                  # gera js/env.js e abre o servidor local
 - Só a Regional Sul foi publicada como dado aberto com endereços de risco. Polígonos oficiais (PMRR/SGB) ainda não foram obtidos.
 - Atendimentos 2024 e chamados de 29/03/2023 entram só como indicadores agregados (sem coordenadas).
 - Testes feitos: sintaxe dos módulos, carregamento dos dados, filtros, tema e regeneração idêntica de `data/` pelo script. Falta testar no navegador real em celular e tablet.
-"# CAD" 

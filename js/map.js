@@ -1,5 +1,5 @@
 // Tudo que toca o Leaflet: mapa, mapas-base, marcadores, camadas estáticas e destaque da seleção.
-import { CFG, SHAPES, TIPOS, NIVEIS, PESO_CALOR, GRADIENTE_CALOR } from './config.js';
+import { CFG, SHAPES, TIPOS, NIVEIS, PESO_CALOR, GRADIENTE_CALOR, DECOR } from './config.js';
 import { esc, cor } from './util.js';
 const L = window.L;
 export let map;
@@ -22,7 +22,7 @@ export function setBase(sel, tema) {
   baseAtual = bases[k].addTo(map); baseAtual.bringToBack();
 }
 const icone = (t) => L.divIcon({ className: '', iconSize: [32, 32], iconAnchor: [16, 16],
-  html: '<svg class="pin t-' + t + '" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><path class="s" d="' + SHAPES[TIPOS[t].shape] + '"/></svg>' });
+  html: '<svg class="pin t-' + t + '" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><path class="s" d="' + SHAPES[TIPOS[t].shape] + '"/>' + DECOR[t] + '</svg>' });
 export function marcadores(lista, modo, aoEscolher) {
   if (grupo) map.removeLayer(grupo);
   grupo = modo === 'cluster' ? L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 42 }) : L.layerGroup();
