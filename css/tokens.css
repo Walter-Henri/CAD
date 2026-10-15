@@ -1,0 +1,22 @@
+/* Tokens de design. Toda cor, raio, espaço e camada do app sai daqui.
+   Base: design.md (Heat Map). Paleta de risco: Okabe-Ito (segura para daltonismo). */
+:root{
+  --accent:#0066cc;--accent-on:#fff;--focus:#0080ff; /* #0080FF do design.md para foco; fill escurecido para contraste 5,6:1 com texto branco */
+  --danger:#c62828;
+  --bg:#eef2f6;--surface:#fff;--surface-2:#f1f5f9;--text:#1b2430;--muted:#546273;--line:#d9e0e8;
+  --c-flood:#0072b2;--c-slide:#d55e00;--c-gen:#a24d85;--c-other:#b87a00;
+  --shadow:0 2px 12px rgba(20,32,48,.08);--shadow-lift:0 8px 24px rgba(20,32,48,.16);
+  --r-lg:24px;--r-md:16px;--r-sm:10px;--u:8px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --side-w:372px;--nav-h:64px;
+  --z-base:0;--z-nav:100;--z-overlay:200;--z-modal:300;--z-toast:500;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+:root[data-t=dark]{
+  --accent:#4da3ff;--accent-on:#07213d;--focus:#4da3ff;--danger:#ff7b72;
+  --bg:#0e141b;--surface:#17202a;--surface-2:#202c38;--text:#e8edf2;--muted:#9eacba;--line:#2c3a48;
+  --c-flood:#56b4e9;--c-slide:#f08a4b;--c-gen:#e0a3c8;--c-other:#f2b84b;
+  --shadow:0 2px 12px rgba(0,0,0,.35);--shadow-lift:0 8px 24px rgba(0,0,0,.5);
+  color-scheme:dark;
+}

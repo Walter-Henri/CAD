@@ -1,0 +1,2 @@
+{ "name": "mapa-risco-recife", "version": "1.0.0", "private": true, "type": "module", "description": "Mapa de apoio à análise de áreas de risco do Recife",
+  "scripts": { "build": "node scripts/inject-env.mjs", "dev": "node scripts/inject-env.mjs && npx serve .", "dados": "python3 scripts/build_data.py" } }

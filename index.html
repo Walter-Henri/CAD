@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="Mapa de apoio à análise de áreas de risco do Recife (deslizamentos e alagamentos) com dados abertos da Prefeitura." />
+<meta name="color-scheme" content="light dark" />
+<title>Mapa de Riscos · Recife</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 30 16 16 30 2 16z' fill='%230066cc'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/app.css" />
+<script>document.documentElement.dataset.t=localStorage.getItem('tema')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')</script>
+</head>
+<body>
+<a class="skip" href="#map">Ir para o mapa</a>
+<header class="nav">
+  <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 30 16 16 30 2 16z" fill="var(--accent)"/><circle cx="16" cy="16" r="5" fill="var(--surface)"/></svg><div><strong>Mapa de Riscos</strong><span>Recife · apoio à análise</span></div></div>
+  <form class="search" id="searchForm" role="search"><label class="sr" for="q">Buscar bairro, rua ou coordenadas</label><input id="q" type="search" placeholder="Bairro, rua ou lat, lng" autocomplete="off" /><button class="btn ghost" type="submit">Buscar</button></form>
+  <div class="nav-actions">
+    <button class="icon-btn" id="bTema" aria-label="Alternar tema claro e escuro" title="Alternar tema"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    <button class="icon-btn only-mobile" id="bSide" aria-label="Abrir painel" aria-expanded="false" title="Painel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  </div>
+</header>
+<div class="app">
+  <aside class="side card" id="side" aria-label="Painel de camadas, filtros e indicadores">
+    <div class="tabs" role="tablist" aria-label="Seções do painel">
+      <button role="tab" id="t-layers" aria-controls="p-layers" aria-selected="true">Camadas</button>
+      <button role="tab" id="t-filters" aria-controls="p-filters" aria-selected="false">Filtros<b class="badge" id="fBadge" hidden>0</b></button>
+      <button role="tab" id="t-stats" aria-controls="p-stats" aria-selected="false">Indicadores</button>
+      <button role="tab" id="t-src" aria-controls="p-src" aria-selected="false">Fontes</button>
+    </div>
+    <section class="pane" id="p-layers" role="tabpanel" aria-labelledby="t-layers"></section>
+    <section class="pane" id="p-filters" role="tabpanel" aria-labelledby="t-filters" hidden></section>
+    <section class="pane" id="p-stats" role="tabpanel" aria-labelledby="t-stats" hidden></section>
+    <section class="pane" id="p-src" role="tabpanel" aria-labelledby="t-src" hidden></section>
+  </aside>
+  <main class="stage">
+    <div id="map" role="application" aria-label="Mapa de áreas de risco do Recife"></div>
+    <div class="tools" aria-label="Ferramentas do mapa">
+      <button class="icon-btn pri" id="bAdd" aria-label="Adicionar ponto de risco" title="Adicionar ponto de risco"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="icon-btn" id="bLoc" aria-label="Minha localização" title="Minha localização"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+      <button class="icon-btn" id="bReset" aria-label="Ver o Recife inteiro" title="Ver o Recife inteiro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="icon-btn" id="bCsv" aria-label="Exportar CSV" title="Exportar CSV"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg><span class="tag">CSV</span></button>
+      <button class="icon-btn" id="bGeo" aria-label="Exportar GeoJSON" title="Exportar GeoJSON"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg><span class="tag">GEO</span></button>
+    </div>
+    <div class="pill" id="pill" role="status" hidden>Clique no mapa, dentro do Recife, para marcar o local</div>
+    <details class="legend card" id="legend" open><summary>Legenda</summary><div id="legendBody"></div></details>
+    <aside class="detail card" id="detail" aria-label="Detalhes do registro" hidden></aside>
+  </main>
+</div>
+<div class="ov" id="modal" hidden><form class="modal card" id="addForm" novalidate aria-labelledby="mTitle">
+  <h2 id="mTitle">Registrar ponto de risco</h2><p class="muted">Coordenadas: <span class="mono" id="fCo">–</span></p>
+  <div class="fg"><label for="fTipo">Tipo de risco</label><select id="fTipo"><option value="inundacao">Inundação ou alagamento</option><option value="deslizamento">Deslizamento de morro</option><option value="outro">Outro risco</option></select></div>
+  <div class="fg"><label for="fTit">Local ou rua</label><input id="fTit" autocomplete="off" /><small class="err" id="fErr" hidden>Informe o local ou a rua.</small></div>
+  <div class="fg"><label for="fBai">Bairro</label><input id="fBai" autocomplete="off" /></div>
+  <div class="fg"><label for="fDes">O que acontece aqui</label><textarea id="fDes"></textarea></div>
+  <div class="fg"><label for="fNiv">Nível percebido</label><select id="fNiv"><option value="alto">Alto</option><option value="medio">Médio</option><option value="baixo">Baixo</option></select></div>
+  <p class="muted small">Contribuições ficam salvas só neste navegador e aparecem como não verificadas.</p>
+  <div class="row-end"><button type="button" class="btn ghost" id="fCan">Cancelar</button><button type="submit" class="btn">Salvar ponto</button></div>
+</form></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script type="module" src="js/main.js"></script>
+<noscript>Este mapa precisa de JavaScript para funcionar.</noscript>
+</body>
+</html>

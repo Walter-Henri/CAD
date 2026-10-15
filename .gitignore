@@ -1,0 +1,7 @@
+node_modules
+.vercel
+raw/
+__pycache__
+.env
+.env.*
+!.env.example
