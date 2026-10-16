@@ -29,6 +29,7 @@ export function marcadores(lista, modo, aoEscolher) {
   lista.forEach((r) => {
     const m = L.marker([r.lat, r.lng], { icon: icone(r.tipo), alt: r.titulo, keyboard: true });
     m.bindTooltip('<strong>' + esc(r.titulo) + '</strong><br>' + TIPOS[r.tipo].label + ' · ' + NIVEIS[r.nivel].short, { direction: 'top', offset: [0, -12] });
+    m.on('add', () => { const e = m.getElement(); if (e && !e._kb) { e._kb = 1; e.setAttribute('aria-label', r.titulo + ', ' + TIPOS[r.tipo].label + ', ' + NIVEIS[r.nivel].label + '. Pressione Enter para abrir os detalhes.'); e.addEventListener('focus', () => m.openTooltip()); e.addEventListener('blur', () => m.closeTooltip()); } });
     m.on('click', () => aoEscolher(r)); grupo.addLayer(m);
   });
   grupo.addTo(map);

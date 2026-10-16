@@ -16,11 +16,11 @@ export const TIPOS = {
   outro: { label: 'Outro risco', shape: 'circle' },
 };
 export const NIVEIS = {
-  mAlto: { label: 'R4 · risco muito alto', short: 'R4' },
-  alto: { label: 'R3 · risco alto', short: 'R3' },
-  medio: { label: 'R2 · risco médio', short: 'R2' },
-  baixo: { label: 'Risco baixo', short: 'Baixo' },
-  nd: { label: 'Sem classificação na fonte', short: 'S/C' },
+  mAlto: { label: 'R4 · risco muito alto', short: 'R4', curto: 'R4 muito alto' },
+  alto: { label: 'R3 · risco alto', short: 'R3', curto: 'R3 alto' },
+  medio: { label: 'R2 · risco médio', short: 'R2', curto: 'R2 médio' },
+  baixo: { label: 'Risco baixo', short: 'Baixo', curto: 'Baixo' },
+  nd: { label: 'Sem classificação na fonte', short: 'S/C', curto: 'Sem classificação' },
 };
 export const ORIGENS = { oficial: 'Dado oficial (endereço)', curadoria: 'Curadoria de listas oficiais', comunidade: 'Comunidade (não verificado)' };
 export const SHAPES = {

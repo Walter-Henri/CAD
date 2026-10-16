@@ -45,6 +45,10 @@ npm run dev                  # gera js/env.js e abre o servidor local
 - **Nova fonte ou camada:** acrescente uma entrada em `data/fontes.json`, carregue o arquivo em `js/data.js`, desenhe em `js/map.js` e liste a camada em `LY` no `js/ui.js`.
 - **Cores e aparência:** `css/tokens.css`. Tipos de risco, níveis e rótulos: `js/config.js`.
 
+## Acessibilidade
+
+Veja `docs/AUDITORIA.md`: problemas encontrados, correções, testes executados e pendências. Nível-alvo: WCAG 2.2 AA, ainda sem validação em dispositivos reais nem com leitor de tela.
+
 ## Decisões de design (design.md "Heat Map")
 
 - Azul `#0080FF` no foco e nos destaques. O fundo dos botões usa `#0066CC` (mesmo matiz, escurecido) para dar contraste 5,6:1 com texto branco. Vermelho só para erros.
