@@ -1,0 +1,20 @@
+{
+  "name": "mapa-risco-recife-tests",
+  "private": true,
+  "type": "module",
+  "description": "Testes de layout e acessibilidade em Chromium real. Depend\u00eancias isoladas para n\u00e3o pesar no deploy do Vercel.",
+  "scripts": {
+    "test:dados": "node dados.mjs ..",
+    "test:func": "node func.mjs ..",
+    "test:layout": "node layout.mjs .. run",
+    "test": "npm run test:dados && npm run test:func && npm run test:layout"
+  },
+  "devDependencies": {
+    "@sparticuz/chromium": "^153.0.0",
+    "axe-core": "^4.14.0",
+    "leaflet": "1.9.4",
+    "leaflet.heat": "0.2.0",
+    "leaflet.markercluster": "1.5.3",
+    "puppeteer-core": "^25.14.0"
+  }
+}

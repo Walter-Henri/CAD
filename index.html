@@ -17,10 +17,10 @@
 <a class="skip" href="#main">Ir para o mapa</a>
 <header class="nav">
   <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 30 16 16 30 2 16z" fill="var(--accent)"/><circle cx="16" cy="16" r="5" fill="var(--surface)"/></svg><div><h1>Mapa de Riscos</h1><span>Recife · apoio à análise</span></div></div>
-  <form class="search" id="searchForm" role="search"><label class="sr" for="q">Buscar bairro, rua ou coordenadas</label><input id="q" type="search" placeholder="Ex.: Nova Descoberta ou -8.06, -34.88" autocomplete="off" /><button class="btn ghost" type="submit">Buscar</button></form>
+  <form class="search" id="searchForm" role="search"><label class="sr" for="q">Buscar bairro, rua ou coordenadas</label><input id="q" type="search" placeholder="Bairro, rua ou lat, lng" autocomplete="off" enterkeyhint="search" inputmode="search" autocapitalize="off" spellcheck="false" /><button class="btn" type="submit" id="bBuscar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span class="btxt" id="bBuscarT">Buscar</span></button></form>
   <div class="nav-actions">
     <button class="icon-btn lbl" id="bTema" aria-label="Alternar entre tema claro e escuro" title="Alternar entre tema claro e escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Tema</span></button>
-    <button class="icon-btn lbl only-mobile" id="bSide" aria-expanded="false" aria-controls="side"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Painel</span></button>
+    <button class="icon-btn lbl only-mobile" id="bSide" aria-expanded="false" aria-controls="side"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span id="bSideT">Camadas e filtros</span></button>
   </div>
 </header>
 <div class="app">
@@ -31,19 +31,22 @@
       <button role="tab" id="t-stats" aria-controls="p-stats" aria-selected="false">Indicadores</button>
       <button role="tab" id="t-src" aria-controls="p-src" aria-selected="false">Fontes</button>
     </div>
-    <section class="pane" id="p-layers" role="tabpanel" aria-labelledby="t-layers"></section>
-    <section class="pane" id="p-filters" role="tabpanel" aria-labelledby="t-filters" hidden></section>
-    <section class="pane" id="p-stats" role="tabpanel" aria-labelledby="t-stats" hidden></section>
-    <section class="pane" id="p-src" role="tabpanel" aria-labelledby="t-src" hidden></section>
+    <section class="pane" id="p-layers" role="tabpanel" tabindex="0" aria-labelledby="t-layers"></section>
+    <section class="pane" id="p-filters" role="tabpanel" tabindex="0" aria-labelledby="t-filters" hidden></section>
+    <section class="pane" id="p-stats" role="tabpanel" tabindex="0" aria-labelledby="t-stats" hidden></section>
+    <section class="pane" id="p-src" role="tabpanel" tabindex="0" aria-labelledby="t-src" hidden></section>
   </aside>
   <main class="stage" id="main" tabindex="-1">
     <div id="map" role="application" aria-label="Mapa de áreas de risco do Recife"></div>
     <div class="tools" role="group" aria-label="Ações do mapa">
       <button class="tool pri" id="bAdd" aria-pressed="false" title="Marque no mapa um local com risco de alagamento ou deslizamento"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Adicionar ponto</button>
+      <button class="tool only-mobile" id="bMais" aria-expanded="false" aria-controls="toolsMore"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg>Mais ações</button>
+      <div class="tools-more" id="toolsMore">
       <button class="tool" id="bLoc" title="Centraliza o mapa onde você está"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Minha localização</button>
       <button class="tool" id="bReset" title="Volta para a vista inicial do município"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Ver Recife inteiro</button>
       <button class="tool" id="bCsv" title="Baixa os registros visíveis em planilha (CSV)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Baixar planilha (CSV)</button>
       <button class="tool" id="bGeo" title="Baixa os registros visíveis em GeoJSON, para usar em sistemas de mapas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Baixar GeoJSON</button>
+      </div>
     </div>
     <div class="pill" id="pill" role="group" aria-label="Adicionar ponto" hidden><span role="status">Clique no mapa, dentro do Recife, para marcar o local, ou use o centro do mapa.</span><button type="button" class="btn sm" id="bCenter">Marcar no centro do mapa</button><button type="button" class="btn ghost sm" id="bCancelAdd">Cancelar</button></div>
     <details class="legend card" id="legend" open><summary>Legenda</summary><div id="legendBody"></div></details>

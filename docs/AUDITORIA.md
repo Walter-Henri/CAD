@@ -32,9 +32,10 @@ Tema claro/escuro com preferência salva, skip link, rótulos persistentes, tama
 - Sintaxe de todos os módulos JS.
 
 ## Limitações e pendências
-- **Sem teste em navegador real, celular ou tablet.** Layout, quebras e a faixa de ferramentas no celular foram escritos, não vistos. (P1 a validar)
+- **Layout e axe (com contraste) já foram testados em Chromium real** em 10 larguras (veja `docs/MOBILE-RESPONSIVIDADE.md`). Continuam sem teste: Safari/iOS, Firefox e dispositivos físicos. (P1)
 - **Sem teste com leitor de tela** (NVDA, VoiceOver, TalkBack). Nomes e regiões foram verificados só por ferramenta automática. (P1)
 - **Zoom de 200% e 400%** e texto ampliado não foram testados. (P1)
+- A ferramenta de contraste do axe agora roda em navegador real: 0 violações nos temas claro e escuro.
 - Os controles internos do Leaflet (zoom, atribuição) usam o tema do app, mas não foram auditados.
 - Confirmações usam `confirm()` do navegador: acessível, mas visualmente fora do padrão. (P3)
 - Os gráficos são descritos por `aria-label` e texto. Uma tabela alternativa seria melhor. (P2)

@@ -17,3 +17,9 @@ export function dentroDoRecife(ll, rpa) {
     return c || m < CFG.toleranciaGraus;
   }));
 }
+
+// Distância aproximada em metros entre dois pontos ({lat,lng} ou [lat,lng]).
+export const distM = (a, b) => {
+  const la = a.lat !== undefined ? a.lat : a[0], lo = a.lng !== undefined ? a.lng : a[1], lb = b.lat !== undefined ? b.lat : b[0], ob = b.lng !== undefined ? b.lng : b[1];
+  return Math.hypot((la - lb) * 111320, (lo - ob) * 111320 * Math.cos(la * Math.PI / 180));
+};

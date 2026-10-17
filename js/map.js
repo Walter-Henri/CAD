@@ -53,3 +53,17 @@ export function iniciarEstaticas(d, aoEscolher, rotuloMancha) {
     .bindTooltip('Ponto de lona · ' + esc(o.titulo)).on('click', () => aoEscolher({ ...o, tipo: 'outro', nivel: 'nd', titulo: 'Ponto de lona · ' + o.titulo }))));
 }
 export function camada(nome, ligado) { const g = estaticas[nome]; if (!g) return; ligado ? g.addTo(map) : map.removeLayer(g); }
+
+// Resposta visual da busca: contorno do lugar (ou anéis, se for um ponto) por 2 segundos, enquanto o mapa se move até lá.
+let tBusca, gBusca;
+export function destacarBusca(res, ms = 2000) {
+  clearTimeout(tBusca); if (gBusca) map.removeLayer(gBusca);
+  if (res.geo) {
+    gBusca = L.geoJSON(res.geo, { style: { className: 'busca', weight: 3, fillOpacity: 0.2, lineJoin: 'round' }, interactive: false }).addTo(map);
+    map.flyToBounds(gBusca.getBounds(), { padding: [48, 48], maxZoom: 16, duration: 1 });
+  } else {
+    gBusca = L.layerGroup([14, 30].map((r) => L.circleMarker(res.centro, { radius: r, className: 'busca busca-anel', weight: 3, fill: false, interactive: false }))).addTo(map);
+    map.flyTo(res.centro, 17, { duration: 1 });
+  }
+  tBusca = setTimeout(() => { if (gBusca) map.removeLayer(gBusca); gBusca = null; }, ms);
+}

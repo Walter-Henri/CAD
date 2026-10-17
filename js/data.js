@@ -19,6 +19,8 @@ export async function carregarTudo() {
     o.tipo = r[4] === 'd' ? 'deslizamento' : 'risco';
     o.nivel = { 2: 'medio', 3: 'alto', 4: 'mAlto' }[r[4]] || 'nd';
     o.desc = r[4] === 'd' ? CD.d + ' (fonte).' : CD[r[4]] + '. O tipo de risco não é informado pela fonte.';
+    const ex = r[6] || []; o.n = 1 + ex.length;
+    if (ex.length) { o.enderecos = [r[5], ...ex.map((e) => e[0])]; o.titulo = r[5] + ' e mais ' + ex.length; o.desc = 'Este ponto reúne ' + o.n + ' endereços com a mesma posição na fonte: ' + o.enderecos.join('; ') + '. Classificação mais alta: ' + CD[r[4]] + '. O tipo de risco não é informado pela fonte.'; }
     d.recs.sul.push(o);
   });
   return d;

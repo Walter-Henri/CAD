@@ -20,8 +20,19 @@ js/export.js        exportação CSV e GeoJSON
 js/theme.js         tema claro/escuro com preferência salva
 data/               dados já tratados + fontes.json (rastreabilidade)
 scripts/build_data.py  regenera data/ a partir dos arquivos baixados do portal
+tests/              testes de layout e acessibilidade em Chromium real (dependências próprias)
+CHANGELOG.md        histórico de mudanças
+docs/               AUDITORIA.md (acessibilidade) e MOBILE-RESPONSIVIDADE.md (layout mobile)
 vercel.json         cabeçalhos e cache
 ```
+
+## Testes
+
+```
+cd tests && npm install && npm test
+```
+
+`test:dados` confere a integridade dos pontos (sem marcadores duplicados nem endereços perdidos). `test:func` roda axe-core (com contraste) e fluxos por teclado e toque; `test:layout` mede 10 larguras x 6 estados (rolagem horizontal, sobreposição, cortes, alvos de toque, campo de busca) e salva capturas em `tests/shots/`. Os mapas-base e a busca (Nominatim) são simulados.
 
 ## Rodar localmente
 
@@ -61,6 +72,7 @@ Veja `docs/AUDITORIA.md`: problemas encontrados, correções, testes executados 
 - **Oficial:** endereços da Regional Sul e limites das RPAs, com a classificação original da Defesa Civil.
 - **Curadoria:** 34 pontos transcritos de listas oficiais e da imprensa, com posição aproximada.
 - **Derivado (análise própria, rotulado no mapa):** manchas de 45 m em torno dos endereços e densidade de endereços. Não são perímetros oficiais nem previsão.
+- **Busca:** ao buscar um lugar (por exemplo "Ibura"), o mapa voa até ele e destaca por 2 segundos o contorno do lugar. O contorno vem do OpenStreetMap (Nominatim), **não é perímetro oficial**; para ruas e coordenadas aparecem anéis no ponto.
 - **Comunidade:** pontos salvos só no navegador de quem os criou, sempre "não verificados".
 - Cada fonte tem órgão, período, licença, metodologia e limitações em `data/fontes.json` (aba **Fontes**).
 

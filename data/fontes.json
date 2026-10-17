@@ -12,7 +12,7 @@
   "formato": "CSV e GeoJSON, endereços pontuais, WGS84",
   "licenca": "Dados abertos do portal (ODbL)",
   "metodologia": "Classificação original da Defesa Civil: Nível 2, 3 e 4, mais registros sem classificação e de deslizamento. O tipo de risco não é informado.",
-  "limitacoes": "Só endereços, sem polígonos. Removidos 1 registro com latitude fora do Recife e 36 duplicados. 15 pontos de lona ficam em camada própria. Cerca de 65 endereços caem até 200 m fora da linha das RPAs."
+  "limitacoes": "Só endereços, sem polígonos. Removidos 1 registro com latitude fora do Recife e 36 duplicados exatos. Dos 349 endereços de risco, 9 estão na mesma coordenada de outro e foram agrupados no mesmo ponto (a lista aparece nos detalhes) e 1 duplicata do mesmo endereço a menos de 15 m foi descartada: 339 pontos para 348 endereços únicos. Textos com \"\\\\n\" literal foram limpos. 15 pontos de lona ficam em camada própria. Cerca de 65 endereços caem até 200 m fora da linha das RPAs."
  },
  {
   "id": "rpa",

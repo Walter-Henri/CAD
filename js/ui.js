@@ -8,7 +8,7 @@ export function abas() {
   const tb = [...document.querySelectorAll('[role=tab]')];
   const sel = (b) => tb.forEach((x) => { const on = x === b; x.setAttribute('aria-selected', on); $(x.getAttribute('aria-controls')).hidden = !on; });
   tb.forEach((b, i) => { b.onclick = () => sel(b); b.onkeydown = (e) => { const j = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : null; if (j !== null) { const n = tb[(j + tb.length) % tb.length]; n.focus(); sel(n); } }; });
-  $('bSide').onclick = () => { const o = $('side').classList.toggle('open'); $('bSide').setAttribute('aria-expanded', o); };
+  $('bSide').onclick = () => painel(!$('side').classList.contains('open'));
 }
 export const carregando = () => ['p-stats', 'p-src'].forEach((id) => { $(id).innerHTML = skel; });
 const chip = (id, on, txt, extra = '') => '<button class="chip" data-' + extra + '="' + id + '" aria-pressed="' + on + '">' + txt + '</button>';
@@ -50,7 +50,7 @@ export function painelIndicadores(d, lista) {
   const mx = A ? Math.max(...A.meses) : 1;
   $('p-stats').innerHTML = '<h2 class="sec">Registros visíveis</h2><div class="kpis"><div class="kpi"><b>' + num(lista.length) + '</b><span>no mapa agora</span></div><div class="kpi"><b>' + num(lista.filter((r) => r.nivel === 'alto' || r.nivel === 'mAlto').length) + '</b><span>em R3 ou R4</span></div></div>' +
     '<h2 class="sec">Por tipo</h2>' + barras(top(Object.fromEntries(Object.entries(t).map(([k, v]) => [TIPOS[k].label, v])), 4)) + '<h2 class="sec">Locais com mais registros</h2>' + barras(top(b, 6)) +
-    '<p class="note">Contagens refletem só as fontes ativas e não medem o risco real de cada bairro.</p>' +
+    '<p class="note">Contagens refletem só as fontes ativas e não medem o risco real de cada bairro. Um ponto da Regional Sul pode reunir mais de um endereço.</p>' +
     (A ? '<h2 class="sec">Atendimentos da Defesa Civil em 2024</h2><div class="cols" role="img" aria-label="Atendimentos por mês: ' + A.meses.map((v, i) => MN[i] + ' ' + v).join(', ') + '">' + A.meses.map((v, i) => '<i title="' + MN[i] + ': ' + num(v) + '" style="height:' + Math.max(3, v / mx * 100) + '%"></i>').join('') + '</div><div class="cl">' + M.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
       '<h2 class="sec">Ocorrências registradas</h2>' + barras(A.oc) + '<h2 class="sec">Grau de risco informado</h2>' + barras(A.gr) + '<h2 class="sec">Bairros com mais atendimentos</h2>' + barras(A.bai) +
       '<p class="note">Referência: ' + num(A.n) + ' registros. Cada linha é uma ação da Defesa Civil (monitoramento, lona, vistoria), não um desastre. Só ' + num(A.nOc) + ' trazem a ocorrência e ' + num(A.nGr) + ' o grau de risco. Sem coordenadas, por isso não aparecem no mapa.</p>' : '<div class="empty"><p>Atendimentos 2024 indisponíveis.</p></div>') +
@@ -75,7 +75,7 @@ export function detalhe(r, ctx) {
     '<span class="tg t-' + r.tipo + '">' + TIPOS[r.tipo].label + '</span><span class="tg lv">' + NIVEIS[r.nivel].label + '</span><h2>' + esc(r.titulo) + '</h2><p class="muted small">' + esc(r.local) + '</p><p style="margin-top:8px;font-size:.9rem">' + esc(r.desc || 'Sem descrição.') + '</p>' +
     '<dl><dt>Origem</dt><dd>' + ORIGENS[r.origem] + '</dd><dt>Fonte</dt><dd>' + esc(r.fonte || 'Contribuição da comunidade, sem verificação') + '</dd><dt>Posição</dt><dd class="mono">' + r.lat.toFixed(5) + ', ' + r.lng.toFixed(5) + (r.aprox ? ' (aproximada)' : '') + '</dd></dl>' +
     '<div class="acts"><button class="btn ghost sm" id="dCopia">Copiar coordenadas</button>' + (r.origem === 'comunidade' ? '<button class="btn ghost sm" id="dDel">Remover ponto</button>' : '') + '</div>';
-  el.hidden = false; $('dX').onclick = ctx.aoFechar; $('dX').focus();
+  el.hidden = false; if (matchMedia('(max-width:900px)').matches) $('legend').open = false; $('dX').onclick = ctx.aoFechar; $('dX').focus();
   $('dCopia').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(r.lat + ', ' + r.lng).then(() => toast('Coordenadas copiadas.'), () => toast('Não foi possível copiar.', true)); };
   if ($('dDel')) $('dDel').onclick = () => ctx.aoRemover(r);
 }
@@ -98,4 +98,19 @@ export function fechaModal(el = $('modal')) {
   if (el.hidden) return; el.hidden = true; el.removeEventListener('keydown', el._trap);
   document.querySelectorAll('.nav,.app').forEach((n) => n.removeAttribute('inert'));
   (_op && _op !== document.body && _op.isConnected ? _op : $('bAdd')).focus();
+}
+
+// Gaveta do painel no celular: abre/fecha, ajusta o rótulo do botão e esconde a legenda enquanto ela estiver coberta.
+export function painel(abrir) {
+  $('side').classList.toggle('open', abrir); document.body.classList.toggle('sheet-open', abrir);
+  $('bSide').setAttribute('aria-expanded', abrir); $('bSideT').textContent = abrir ? 'Fechar painel' : 'Camadas e filtros';
+}
+// Menu "Mais ações" do celular: fecha ao escolher uma ação, ao clicar fora e com Esc.
+export function menuAcoes() {
+  const t = document.querySelector('.tools'), b = $('bMais');
+  const fecha = (foco) => { t.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); if (foco) b.focus(); };
+  b.onclick = () => { const o = t.classList.toggle('open'); b.setAttribute('aria-expanded', o); };
+  t.querySelectorAll('.tools-more .tool').forEach((x) => x.addEventListener('click', () => fecha(false)));
+  document.addEventListener('click', (e) => { if (t.classList.contains('open') && !t.contains(e.target)) fecha(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && t.classList.contains('open')) { e.stopPropagation(); fecha(true); } }, true);
 }

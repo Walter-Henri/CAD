@@ -1,10 +1,10 @@
 // Orquestração: estado, eventos e ligação entre dados, mapa e interface.
-import { CFG } from './config.js';
+import { CFG, TIPOS } from './config.js';
 import { $ } from './util.js';
 import * as tema from './theme.js';
 import * as M from './map.js';
 import { carregarTudo } from './data.js';
-import { dentroDoRecife } from './geo.js';
+import { dentroDoRecife, distM } from './geo.js';
 import { buscar } from './search.js';
 import * as X from './export.js';
 import * as UI from './ui.js';
@@ -21,12 +21,12 @@ const dentro = (ll) => dentroDoRecife(ll, S.d.rpa);
 function atualizar() {
   const lista = visiveis();
   M.marcadores(lista, S.view, escolher);
-  M.calor(S.layers.heat ? filtrar(S.d.recs.sul) : [], S.layers.heat);
+  M.calor(S.layers.heat ? filtrar(S.d.recs.sul).flatMap((r) => Array(r.n || 1).fill(r)) : [], S.layers.heat);
   UI.painelFiltros(ctx, lista, ativos());
   UI.painelIndicadores(S.d, lista);
   UI.legenda(S.layers.heat);
   $('status').textContent = lista.length + ' registros visíveis no mapa.';
-  [['sul', S.d.recs.sul.length], ['curados', S.d.recs.curados.length], ['lona', S.d.recs.lona.length], ['usuario', S.user.length]].forEach(([k, n]) => { const e = $('n-' + k); if (e) e.textContent = n; });
+  [['sul', S.d.recs.sul.reduce((a, r) => a + (r.n || 1), 0)], ['curados', S.d.recs.curados.length], ['lona', S.d.recs.lona.length], ['usuario', S.user.length]].forEach(([k, n]) => { const e = $('n-' + k); if (e) e.textContent = n; });
 }
 function escolher(r) { S.foco = document.activeElement; M.destacar(r); UI.detalhe(r, { aoFechar: fechar, aoRemover: remover }); }
 function fechar() { UI.fechaDetalhe(); M.destacar(null); if (S.foco && S.foco.isConnected) S.foco.focus(); }
@@ -39,7 +39,8 @@ const ctx = { layers: S.layers, base: S.base, view: S.view, filtros: S.filtros, 
 
 const NOMES = { fontes: 'lista de fontes', curados: 'pontos curados', sul: 'áreas de risco da Regional Sul', manchas: 'manchas derivadas', rpa: 'limites das RPAs', atend: 'atendimentos 2024', chamados: 'chamados à Defesa Civil' };
 async function iniciar() {
-  M.initMap(); M.setBase('auto', tema.tema()); UI.abas(); UI.carregando();
+  M.initMap(); M.setBase('auto', tema.tema()); UI.abas(); UI.menuAcoes(); UI.carregando();
+  if (matchMedia('(max-width:900px)').matches) $('legend').open = false;
   $('bTema').onclick = () => tema.alternar(() => { M.setBase(S.base, tema.tema()); M.destacar(null); });
   tema.seguirSistema(() => M.setBase(S.base, tema.tema()));
   S.d = await carregarTudo(); ctx.fontes = S.d.fontes;
@@ -69,20 +70,22 @@ function eventos() {
       (er) => UI.toast(er.code === 1 ? 'Permissão de localização negada. Ative-a nas configurações do navegador ou use a busca.' : 'Não foi possível determinar sua posição. Verifique o GPS e a conexão e tente de novo.', true)); };
   $('searchForm').onsubmit = async (e) => { e.preventDefault(); const v = $('q').value.trim();
     if (!v) { UI.toast('Digite um bairro, uma rua ou coordenadas. Ex.: Nova Descoberta ou -8.06, -34.88.', true); return $('q').focus(); }
-    const b = $('searchForm').querySelector('button'); b.disabled = true; b.textContent = 'Buscando…';
-    try { M.map.flyTo(await buscar(v, dentro), 16); UI.toast('Mapa centralizado em "' + v + '".'); } catch (x) { UI.toast(x.message + ' Tente o nome do bairro ou coordenadas como -8.06, -34.88.', true); } finally { b.disabled = false; b.textContent = 'Buscar'; } };
-  $('bAdd').onclick = () => { if (S.addMode) return fimAdd(); S.addMode = true; $('bAdd').setAttribute('aria-pressed', 'true'); $('pill').hidden = false; $('map').style.cursor = 'crosshair'; $('bCenter').focus(); };
+    const b = $('bBuscar'); b.disabled = true; $('bBuscarT').textContent = 'Buscando…';
+    try { const r = await buscar(v, dentro); M.destacarBusca(r); UI.toast('Mostrando "' + r.nome + '" no mapa' + (r.geo ? ' (contorno do OpenStreetMap, não oficial).' : '.')); } catch (x) { UI.toast(x.message + ' Tente o nome do bairro ou coordenadas como -8.06, -34.88.', true); } finally { b.disabled = false; $('bBuscarT').textContent = 'Buscar'; } };
+  $('bAdd').onclick = () => { if (S.addMode) return fimAdd(); UI.painel(false); S.addMode = true; $('bAdd').setAttribute('aria-pressed', 'true'); $('pill').hidden = false; $('map').style.cursor = 'crosshair'; $('bCenter').focus(); };
   $('bCenter').onclick = () => pedirPonto(M.map.getCenter()); $('bCancelAdd').onclick = fimAdd;
   M.map.on('click', (e) => { if (S.addMode) pedirPonto(e.latlng); });
   $('fCan').onclick = cancelarForm;
   $('addForm').onsubmit = (e) => { e.preventDefault(); const t = $('fTit').value.trim();
     if (!t) { $('fErr').hidden = false; $('fTit').setAttribute('aria-invalid', 'true'); $('fTit').focus(); return; }
+    const perto = [...S.d.recs.curados, ...S.d.recs.sul, ...S.user].map((r) => [r, distM(r, S.tmp)]).filter(([, d]) => d <= 15).sort((x, y) => x[1] - y[1])[0];
+    if (perto && !confirm('Já existe um registro a ' + Math.round(perto[1]) + ' m deste local:\n"' + perto[0].titulo + '" (' + TIPOS[perto[0].tipo].label + ').\n\nRegistrar um novo ponto mesmo assim?')) return $('fTit').focus();
     const rec = { id: 'u' + Date.now(), tipo: $('fTipo').value, titulo: t, local: $('fBai').value.trim(), desc: $('fDes').value.trim(), nivel: $('fNiv').value, lat: S.tmp.lat, lng: S.tmp.lng, origem: 'comunidade', camada: 'usuario' };
     S.user.push(rec); salvar(); S.layers.usuario = true; const cb = document.querySelector('[data-ly=usuario]'); if (cb) cb.checked = true;
     fimAdd(); atualizar(); escolher(rec); UI.toast('Ponto salvo. Ele aparece como "não verificado" e fica só neste navegador.'); };
   $('fTit').addEventListener('input', () => { $('fErr').hidden = true; $('fTit').removeAttribute('aria-invalid'); });
   document.addEventListener('keydown', (e) => { if (e.key !== 'Escape' || !$('modal').hidden) return;
     if (S.addMode) fimAdd(); else if (!$('detail').hidden) fechar();
-    else if ($('side').classList.contains('open')) { $('side').classList.remove('open'); $('bSide').setAttribute('aria-expanded', 'false'); $('bSide').focus(); } });
+    else if ($('side').classList.contains('open')) { UI.painel(false); $('bSide').focus(); } });
 }
 iniciar();
