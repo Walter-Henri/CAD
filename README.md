@@ -17,7 +17,7 @@ js/ui.js            painel (abas), filtros, indicadores, fontes, legenda, detalh
 js/geo.js           valida se um ponto está no Recife
 js/search.js        busca por nome ou coordenadas
 js/export.js        exportação CSV e GeoJSON
-js/theme.js         tema claro/escuro com preferência salva
+js/theme.js         alternância entre tema escuro (padrão) e claro
 data/               dados já tratados + fontes.json (rastreabilidade)
 scripts/build_data.py  regenera data/ a partir dos arquivos baixados do portal
 tests/              testes de layout e acessibilidade em Chromium real (dependências próprias)
@@ -59,6 +59,11 @@ npm run dev                  # gera js/env.js e abre o servidor local
 ## Acessibilidade
 
 Veja `docs/AUDITORIA.md`: problemas encontrados, correções, testes executados e pendências. Nível-alvo: WCAG 2.2 AA, ainda sem validação em dispositivos reais nem com leitor de tela.
+
+## Padrões ao abrir
+
+- **Tema escuro sempre.** A cada carregamento da página o tema é escuro, sem consultar a preferência do sistema nem uma escolha anterior. O usuário pode alternar para o claro, mas a escolha vale só até recarregar e não é salva. O `index.html` fixa o tema antes de a página aparecer, para não piscar.
+- **Mapa-base: Satélite.** O painel Camadas oferece Satélite (padrão), Ruas (segue o tema) e Relevo. A escolha também vale só até recarregar.
 
 ## Decisões de design (design.md "Heat Map")
 

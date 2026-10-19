@@ -17,13 +17,14 @@ const novo = async (w, h, touch, dark) => { const p = await browser.newPage(); a
   p.on('request', (rq) => { const u = rq.url(); const k = Object.keys(LOCAL).find((x) => u.includes(x)); if (k) return rq.respond({ status: 200, contentType: k.endsWith('css') ? 'text/css' : 'text/javascript', body: fs.readFileSync(LOCAL[k]) });
     if (u.startsWith('http://localhost')) return rq.continue(); if (u.includes('nominatim')) return setTimeout(() => rq.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: NOMI }), 500);
     if (/tile|arcgis|cartocdn/.test(u)) return rq.respond({ status: 200, contentType: 'image/png', body: PNG }); return rq.abort(); });
+  p._urls = []; p.on('request', (rq) => p._urls.push(rq.url()));
   p.on('pageerror', (e) => R.push('ERRO JS: ' + e.message));
   await p.evaluateOnNewDocument(() => { try { localStorage.removeItem('riscos_recife_usuario'); } catch (e) { /* */ } });
   await p.goto('http://localhost:' + PORT + '/', { waitUntil: 'load' }); await new Promise((r) => setTimeout(r, 800)); return p; };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 // --- 1) axe com contraste, 4 combinações
 for (const [rot, w, h, touch, dark] of [['celular claro', 390, 844, true, false], ['celular escuro', 390, 844, true, true], ['desktop claro', 1440, 900, false, false], ['desktop escuro', 1440, 900, false, true]]) {
-  const p = await novo(w, h, touch, dark); await p.evaluate(axe);
+  const p = await novo(w, h, touch, dark); if (!dark) { await p.click('#bTema'); await wait(300); } await p.evaluate(axe);
   const estados = [['inicial', async () => {}], ['painel Filtros', async () => { if (touch) await p.click('#bSide'); await wait(400); await p.click('#t-filters'); await wait(200); }], ['painel Indicadores', async () => { await p.click('#t-stats'); await wait(200); }], ['painel Fontes', async () => { await p.click('#t-src'); await wait(200); }]];
   for (const [n, f] of estados) { await f(); const r = await p.evaluate(() => axe.run(document, { rules: { region: { enabled: false } } }).then((x) => x.violations.map((v) => v.id + ' x' + v.nodes.length + ' ' + v.nodes.slice(0, 2).map((n) => n.target.join(' ')).join(' | '))));
     ok('axe ' + rot + ' / ' + n, r.length === 0, r.join('; ')); }
@@ -31,6 +32,9 @@ for (const [rot, w, h, touch, dark] of [['celular claro', 390, 844, true, false]
 }
 // --- 2) celular: teclado, menus, busca, tema
 { const p = await novo(390, 844, true, false);
+  ok('abre no tema escuro mesmo com o sistema em tema claro', (await p.evaluate(() => document.documentElement.dataset.t)) === 'dark');
+  ok('mapa-base inicial é Satélite (chip marcado)', await p.$eval('#cBase [data-base=sat]', (e) => e.getAttribute('aria-pressed') === 'true') && (await p.$$eval('#cBase [aria-pressed=true]', (a) => a.length)) === 1);
+  ok('ao abrir só tiles de satélite são pedidos (nenhum do mapa de ruas)', p._urls.some((u) => u.includes('arcgisonline')) && !p._urls.some((u) => u.includes('cartocdn')), p._urls.filter((u) => /arcgis|carto/.test(u)).length + ' tiles');
   ok('legenda começa recolhida no celular', await p.$eval('#legend', (e) => !e.open));
   ok('painel fechado não é alcançável por Tab (visibility)', await p.$eval('#side', (e) => getComputedStyle(e).visibility === 'hidden'));
   let dentro = 0; for (let i = 0; i < 45; i++) { await p.keyboard.press('Tab'); dentro += await p.evaluate(() => !!document.activeElement.closest('#side')); }
@@ -53,8 +57,12 @@ for (const [rot, w, h, touch, dark] of [['celular claro', 390, 844, true, false]
   await wait(1900); ok('contorno some após ~2 s', (await p.$$eval('path.busca', (a) => a.length)) === 0);
   await p.type('#q', 'Rua Doutor José Rufino, Estância, Recife'); const v = await p.$eval('#q', (e) => ({ w: e.clientWidth, sc: e.scrollWidth, f: getComputedStyle(e).fontSize, h: e.offsetHeight }));
   ok('campo de busca no celular: ≥ 300 px de largura, 16 px, ≥ 44 px de altura', v.w >= 300 && v.f === '16px' && v.h >= 44, JSON.stringify(v));
-  // tema
-  await p.click('#bTema'); ok('tema alterna para escuro e é salvo', (await p.evaluate(() => document.documentElement.dataset.t)) === 'dark' && (await p.evaluate(() => localStorage.getItem('tema'))) === 'dark');
+  // tema: alterna na sessão, mas não é salvo e volta ao escuro ao recarregar
+  await p.click('#bTema'); ok('alternar muda para o tema claro na sessão e não salva nada', (await p.evaluate(() => document.documentElement.dataset.t)) === 'light' && (await p.evaluate(() => localStorage.getItem('tema'))) === null);
+  await p.click('#bSide'); await wait(450); await p.click('#t-layers'); await p.click('#cBase [data-base=auto]'); await wait(200);
+  ok('mapa-base "Ruas" segue o tema (claro) e Satélite deixa de ser o marcado', await p.$eval('#cBase [data-base=sat]', (e) => e.getAttribute('aria-pressed') === 'false'));
+  await p.reload({ waitUntil: 'load' }); await wait(800);
+  ok('ao recarregar, o tema escuro volta e o Satélite é o mapa-base', (await p.evaluate(() => document.documentElement.dataset.t)) === 'dark' && await p.$eval('#cBase [data-base=sat]', (e) => e.getAttribute('aria-pressed') === 'true'));
   await p.close(); }
 // --- 3) adicionar ponto + modal no celular com teclado
 { const p = await novo(360, 640, true, false);
@@ -81,6 +89,15 @@ for (const [rot, w, h, touch, dark] of [['celular claro', 390, 844, true, false]
   const fim = await icones(); ok('no zoom máximo nenhum marcador fica empilhado sobre outro', fim.empilhados === 0 && fim.n === 373, JSON.stringify(fim));
   await p.click('#t-filters'); await p.click('[data-fn=nd]'); await p.click('[data-fn=nd]'); await p.click('#bTema'); await wait(300);
   const dep = await icones(); ok('filtros e tema não geram marcadores a mais', dep.n === 373, dep.n + ' ícones');
+  await p.close(); }
+// --- 5) preferência antiga salva como "claro" é ignorada e descartada
+{ const p = await browser.newPage(); await p.setViewport({ width: 1280, height: 800 }); await p.setRequestInterception(true);
+  p.on('request', (rq) => { const u = rq.url(); const k = Object.keys(LOCAL).find((x) => u.includes(x)); if (k) return rq.respond({ status: 200, contentType: k.endsWith('css') ? 'text/css' : 'text/javascript', body: fs.readFileSync(LOCAL[k]) }); if (u.startsWith('http://localhost')) return rq.continue(); if (/tile|arcgis|cartocdn/.test(u)) return rq.respond({ status: 200, contentType: 'image/png', body: PNG }); return rq.abort(); });
+  await p.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'light' }]);
+  await p.evaluateOnNewDocument(() => { try { if (!sessionStorage.getItem('semeado')) { localStorage.setItem('tema', 'light'); sessionStorage.setItem('semeado', '1'); } } catch (e) { /* */ } });
+  await p.goto('http://localhost:' + PORT + '/', { waitUntil: 'load' }); await wait(600);
+  ok('com "claro" salvo de visitas antigas e sistema em claro, abre no escuro', (await p.evaluate(() => document.documentElement.dataset.t)) === 'dark');
+  ok('a preferência antiga é apagada do navegador', (await p.evaluate(() => localStorage.getItem('tema'))) === null);
   await p.close(); }
 await browser.close(); srv.close();
 console.log(R.join('\n')); console.log('\nTotal:', R.filter((x) => x.startsWith('OK')).length, 'OK |', R.filter((x) => x.startsWith('FALHA') || x.startsWith('ERRO')).length, 'falhas');

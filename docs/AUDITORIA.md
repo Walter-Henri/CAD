@@ -23,7 +23,7 @@ Escopo: interface do mapa (cabeçalho, painel com 4 abas, mapa, ferramentas, leg
 | P3 | Resumo de filtros em chips sem agrupamento | Grupos sem nome | `role="group"` com título associado | axe |
 
 ## O que já funcionava e foi preservado
-Tema claro/escuro com preferência salva, skip link, rótulos persistentes, tamanho de alvo de 44 px nos botões, `prefers-reduced-motion`, legenda sempre visível, estados de carregamento, vazio e falha por fonte, aba Fontes com rastreabilidade.
+Alternância entre tema claro e escuro (hoje o escuro é sempre o padrão ao abrir, sem salvar a escolha), skip link, rótulos persistentes, tamanho de alvo de 44 px nos botões, `prefers-reduced-motion`, legenda sempre visível, estados de carregamento, vazio e falha por fonte, aba Fontes com rastreabilidade.
 
 ## Verificações executadas
 - 50 pares de cor (claro e escuro) contra WCAG 1.4.3 e 1.4.11: 0 falhas.

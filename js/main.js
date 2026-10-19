@@ -9,7 +9,7 @@ import { buscar } from './search.js';
 import * as X from './export.js';
 import * as UI from './ui.js';
 
-const S = { d: null, user: [], layers: { sul: true, manchas: true, curados: true, heat: false, lona: false, rpa: true, usuario: true }, base: 'auto', view: 'cluster',
+const S = { d: null, user: [], layers: { sul: true, manchas: true, curados: true, heat: false, lona: false, rpa: true, usuario: true }, base: 'sat', view: 'cluster',
   filtros: { tipos: new Set(['inundacao', 'deslizamento', 'risco', 'outro']), niveis: new Set(['mAlto', 'alto', 'medio', 'baixo', 'nd']), fonte: '', bairro: '' }, addMode: false, tmp: null };
 try { S.user = JSON.parse(localStorage.getItem(CFG.storeUser) || '[]'); } catch (e) { S.user = []; }
 const salvar = () => { try { localStorage.setItem(CFG.storeUser, JSON.stringify(S.user)); } catch (e) { /* sem armazenamento */ } };
@@ -39,10 +39,9 @@ const ctx = { layers: S.layers, base: S.base, view: S.view, filtros: S.filtros, 
 
 const NOMES = { fontes: 'lista de fontes', curados: 'pontos curados', sul: 'áreas de risco da Regional Sul', manchas: 'manchas derivadas', rpa: 'limites das RPAs', atend: 'atendimentos 2024', chamados: 'chamados à Defesa Civil' };
 async function iniciar() {
-  M.initMap(); M.setBase('auto', tema.tema()); UI.abas(); UI.menuAcoes(); UI.carregando();
+  M.initMap(); M.setBase(S.base, tema.tema()); UI.abas(); UI.menuAcoes(); UI.carregando();
   if (matchMedia('(max-width:900px)').matches) $('legend').open = false;
   $('bTema').onclick = () => tema.alternar(() => { M.setBase(S.base, tema.tema()); M.destacar(null); });
-  tema.seguirSistema(() => M.setBase(S.base, tema.tema()));
   S.d = await carregarTudo(); ctx.fontes = S.d.fontes;
   if (!S.d.rpa) UI.toast('Limites do município indisponíveis: a validação de novos pontos está desligada.', true);
   M.iniciarEstaticas(S.d, escolher);

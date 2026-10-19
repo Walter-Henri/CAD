@@ -23,6 +23,8 @@ Refinamento mobile, responsividade e padronização de botões e do campo de bus
 - **Painéis de abas com área rolável sem foco por teclado** (axe `scrollable-region-focusable`). Cada painel recebeu `tabindex="0"`. `index.html`.
 
 ### Changed
+- **Tema escuro como padrão fixo.** Antes o tema vinha da escolha salva ou da preferência do sistema. Agora toda carga da página abre no escuro; o botão "Tema" alterna para o claro só até recarregar, e nada é salvo. A preferência do sistema deixou de ser consultada e uma escolha salva em visitas antigas é apagada. O `index.html` aplica o tema antes de exibir a página. `index.html`, `js/theme.js`, `js/main.js`.
+- **Satélite como mapa-base inicial.** O painel Camadas passa a listar Satélite, Ruas e Relevo, com Satélite marcado ao abrir. A opção antes chamada "Padrão" foi renomeada para "Ruas" (segue o tema do app), porque "Padrão" deixou de ser o mapa inicial. A escolha vale só até recarregar. `js/main.js`, `js/ui.js`.
 - **Cabeçalho do celular em duas linhas** (marca e Tema; busca em largura total) e **no desktop sem mudança**. O cabeçalho deixou de ser fixo com altura de 64 px e passou a ser da coluna flex do corpo (`100dvh`). `css/app.css`.
 - **Botão de busca no celular** é um ícone de lupa dentro do campo (nome acessível "Buscar"; texto visível no desktop). Mostra "Buscando…" durante a consulta. `index.html`, `js/main.js`.
 - **Ações do mapa no celular:** "Adicionar ponto" fica sempre visível e as outras quatro (Minha localização, Ver Recife inteiro, CSV, GeoJSON) ficam no menu "Mais ações". No desktop continuam todas visíveis. `index.html`, `css/app.css`, `js/ui.js`.
@@ -48,7 +50,7 @@ Refinamento mobile, responsividade e padronização de botões e do campo de bus
 ### Testing
 - **Novo `tests/dados.mjs`:** integridade dos dados (sem posição repetida, sem duplicata numerada a 15 m, nenhum endereço perdido, textos limpos). Reprova os dados anteriores (7 posições repetidas, 1 duplicata) e aprova os atuais (7 de 7).
 - **Novo `tests/layout.mjs`:** Chromium real, 10 larguras x 6 estados, mede rolagem horizontal, sobreposição, controles cortados, alvos de toque, abas comprimidas e campo de busca, e salva capturas. Resultado: 66 cenários, 0 violações (linha de base: 54 sobreposições, 26 cortados, 276 alvos pequenos, 6 não clicáveis em 58 cenários).
-- **Novo `tests/func.mjs`:** axe-core com contraste (celular e desktop, claro e escuro, 4 abas), foco por teclado, gaveta, menu, busca com resposta simulada, tema e fluxo de adicionar ponto. Resultado: 40 de 40 aprovadas, incluindo 5 verificações novas de marcadores duplicados (um ícone por registro, nenhum empilhado no zoom máximo, confirmação ao registrar ponto a menos de 15 m, filtros e tema sem marcadores a mais).
+- **Novo `tests/func.mjs`:** axe-core com contraste (celular e desktop, claro e escuro, 4 abas), foco por teclado, gaveta, menu, busca com resposta simulada, tema e fluxo de adicionar ponto. Resultado: 47 de 47 aprovadas (7 novas cobrem o tema escuro e o Satélite como padrão e a recarga), incluindo 5 verificações novas de marcadores duplicados (um ícone por registro, nenhum empilhado no zoom máximo, confirmação ao registrar ponto a menos de 15 m, filtros e tema sem marcadores a mais).
 - Verificação de sintaxe dos módulos e execução do passo de build (`scripts/inject-env.mjs`).
 - Execução: `cd tests && npm install && npm test` (roda dados, funcional e layout). Dependências isoladas em `tests/package.json`, que o Vercel não instala.
 
@@ -70,6 +72,6 @@ Refinamento mobile, responsividade e padronização de botões e do campo de bus
 Reconstituído a partir da documentação do projeto, sem datas:
 
 - Mapa com dados abertos da Prefeitura do Recife (áreas de risco da Regional Sul, limites das RPAs), manchas derivadas e densidade de endereços, pontos curados e rastreabilidade das fontes (`data/fontes.json`).
-- Interface com tema claro e escuro, painel com abas (Camadas, Filtros, Indicadores, Fontes), legenda, detalhes do registro, busca com contorno de 2 s, exportação CSV e GeoJSON e adição de pontos pela comunidade.
+- Interface com tema claro e escuro (na época, com escolha salva), painel com abas (Camadas, Filtros, Indicadores, Fontes), legenda, detalhes do registro, busca com contorno de 2 s, exportação CSV e GeoJSON e adição de pontos pela comunidade.
 - Chave CARTO por variável de ambiente (`CARTO_API_KEY`), configuração para Vercel e script de geração de dados (`scripts/build_data.py`).
 - Auditoria de acessibilidade (`docs/AUDITORIA.md`).
